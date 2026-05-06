@@ -62,7 +62,7 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.0"
+        exact: "1.0.5"
     ),
 
     // Required workaround for Apple SPM's "stable depends on unstable"
@@ -89,7 +89,7 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.0` or *Up to Next Major*. You must also add
+URL and pick version `1.0.5` or *Up to Next Major*. You must also add
 `https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
 package dependency, choosing the *Branch* dependency rule with branch
 `master` (see explanation above).
@@ -102,43 +102,39 @@ xcodebuild -resolvePackageDependencies
 
 #### Required linker flags (SPM consumers)
 
-Apple Swift Package Manager forbids vendored packages from declaring
-`unsafeFlags` when consumed by a version-pinned target. You must add the
-following flags to your **application target's** Build Settings:
+Add these two flags to your **application target's** Build Settings.
+This is the standard ML Kit-on-SPM requirement — every SDK that bundles
+ML Kit (Firebase, Google Maps, MLKit-SPM wrapper, etc.) needs them, and
+Apple Swift Package Manager does not let vendored packages propagate
+them automatically.
 
 `Build Settings → Linking - General → Other Linker Flags`:
 
 ```
 -ObjC
 -all_load
--framework CoreLocation
--framework CoreML
--weak_framework CoreNFC
--weak_framework CryptoKit
--weak_framework CryptoTokenKit
 ```
 
 Or as `xcconfig`:
 
 ```
-OTHER_LDFLAGS = $(inherited) -ObjC -all_load -framework CoreLocation -framework CoreML -weak_framework CoreNFC -weak_framework CryptoKit -weak_framework CryptoTokenKit
+OTHER_LDFLAGS = $(inherited) -ObjC -all_load
 ```
 
 Why these flags are needed:
 
-| Flag                                 | Reason                                                                                |
-| ------------------------------------ | ------------------------------------------------------------------------------------- |
-| `-ObjC`                              | Loads Objective-C categories from the ML Kit static libraries vendored inside the SDK |
-| `-all_load`                          | Forces every static library symbol to be loaded so ML Kit category dispatch works     |
-| `-framework CoreLocation`            | `MLKitTextRecognitionCommon` references `CLLocationCoordinate2DIsValid` for telemetry helpers |
-| `-framework CoreML`                  | TensorFlow Lite's CoreML delegate references `MLModel`, `MLFeatureValue`, etc.        |
-| `-weak_framework CoreNFC`            | NFC chip reading is optional. Weak linking prevents launch crashes on non-NFC devices |
-| `-weak_framework CryptoKit`          | Same as above, for devices without `CryptoKit` availability                           |
-| `-weak_framework CryptoTokenKit`     | Same as above, for hosts that do not link the Secure Enclave APIs                     |
+| Flag         | Reason                                                                                |
+| ------------ | ------------------------------------------------------------------------------------- |
+| `-ObjC`      | Loads Objective-C categories from the ML Kit static libraries vendored inside the SDK |
+| `-all_load`  | Forces every static library symbol to be loaded so ML Kit category dispatch works     |
 
-If you forget `-ObjC` or `-all_load`, the application will compile but
-will throw `unrecognized selector` exceptions at runtime when ML Kit
-categories are dispatched.
+If you forget either flag, the application will compile but will throw
+`unrecognized selector` exceptions at runtime when ML Kit categories
+are dispatched.
+
+Everything else (CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit /
+CryptoTokenKit) is already wired into the framework binary and the
+package manifest, so you do not need to add them.
 
 > **Apple Silicon Macs:** ML Kit ships only Intel simulator slices.
 > Simulator builds on Apple Silicon must run under Rosetta 2, or you can
@@ -155,7 +151,7 @@ use_frameworks! :linkage => :dynamic
 
 target 'MyApp' do
   pod 'SAMobileCapture',
-    :podspec => 'https://raw.githubusercontent.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/1.0.0/SAMobileCapture.podspec'
+    :podspec => 'https://raw.githubusercontent.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/1.0.5/SAMobileCapture.podspec'
 end
 ```
 
