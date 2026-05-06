@@ -111,6 +111,8 @@ following flags to your **application target's** Build Settings:
 ```
 -ObjC
 -all_load
+-framework CoreLocation
+-framework CoreML
 -weak_framework CoreNFC
 -weak_framework CryptoKit
 -weak_framework CryptoTokenKit
@@ -119,7 +121,7 @@ following flags to your **application target's** Build Settings:
 Or as `xcconfig`:
 
 ```
-OTHER_LDFLAGS = $(inherited) -ObjC -all_load -weak_framework CoreNFC -weak_framework CryptoKit -weak_framework CryptoTokenKit
+OTHER_LDFLAGS = $(inherited) -ObjC -all_load -framework CoreLocation -framework CoreML -weak_framework CoreNFC -weak_framework CryptoKit -weak_framework CryptoTokenKit
 ```
 
 Why these flags are needed:
@@ -128,6 +130,8 @@ Why these flags are needed:
 | ------------------------------------ | ------------------------------------------------------------------------------------- |
 | `-ObjC`                              | Loads Objective-C categories from the ML Kit static libraries vendored inside the SDK |
 | `-all_load`                          | Forces every static library symbol to be loaded so ML Kit category dispatch works     |
+| `-framework CoreLocation`            | `MLKitTextRecognitionCommon` references `CLLocationCoordinate2DIsValid` for telemetry helpers |
+| `-framework CoreML`                  | TensorFlow Lite's CoreML delegate references `MLModel`, `MLFeatureValue`, etc.        |
 | `-weak_framework CoreNFC`            | NFC chip reading is optional. Weak linking prevents launch crashes on non-NFC devices |
 | `-weak_framework CryptoKit`          | Same as above, for devices without `CryptoKit` availability                           |
 | `-weak_framework CryptoTokenKit`     | Same as above, for hosts that do not link the Secure Enclave APIs                     |
@@ -135,6 +139,11 @@ Why these flags are needed:
 If you forget `-ObjC` or `-all_load`, the application will compile but
 will throw `unrecognized selector` exceptions at runtime when ML Kit
 categories are dispatched.
+
+> **Apple Silicon Macs:** ML Kit ships only Intel simulator slices.
+> Simulator builds on Apple Silicon must run under Rosetta 2, or you can
+> exclude `arm64` from your simulator architectures. Device builds work
+> natively on all Macs.
 
 ### CocoaPods
 

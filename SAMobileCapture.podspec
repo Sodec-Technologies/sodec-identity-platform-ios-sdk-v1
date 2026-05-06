@@ -49,7 +49,7 @@ Pod::Spec.new do |spec|
   # Weakly link NFC + Crypto frameworks so hosts without NFC / Secure Enclave
   # support do not crash at launch.
   spec.xcconfig = {
-    'OTHER_LDFLAGS' => '-weak_framework CoreNFC -weak_framework CryptoKit -weak_framework CryptoTokenKit'
+    'OTHER_LDFLAGS' => '-ObjC -all_load -framework CoreLocation -framework CoreML -weak_framework CoreNFC -weak_framework CryptoKit -weak_framework CryptoTokenKit'
   }
 
   # MNN / ncnn / openmp are statically embedded inside the xcframework binary,
