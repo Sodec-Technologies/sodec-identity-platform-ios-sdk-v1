@@ -56,7 +56,7 @@ let package = Package(
                 .product(name: "MLKitBarcodeScanning", package: "google-mlkit-swiftpm"),
                 .product(name: "OpenCV",              package: "opencv-spm"),
                 .product(name: "OpenSSL",              package: "OpenSSL"),
-                .product(name: "TensorFlowLite",       package: "TensorFlowLiteSwift")
+                .product(name: "TensorFlowLiteSwift",  package: "TensorFlowLiteSwift")
             ],
             path: "Sources/SAMobileCaptureBootstrap",
             linkerSettings: [
