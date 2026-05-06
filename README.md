@@ -16,7 +16,7 @@ This single repository serves both **Swift Package Manager** and
 **CocoaPods**. The xcframework binary is shipped as a GitHub Release
 asset and verified against a SHA-256 checksum on every install.
 
-> **Starting with 1.0.6** the xcframework ships as a "static-inside-dynamic"
+> **Starting with 1.0.7** the xcframework ships as a "static-inside-dynamic"
 > binary: every ML Kit, TensorFlow Lite, OpenCV, FBLPromises,
 > GTMSessionFetcher, GoogleDataTransport, GoogleToolboxForMac,
 > GoogleUtilities, and nanopb dependency is statically embedded inside
@@ -71,7 +71,7 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.6"
+        exact: "1.0.7"
     )
 ],
 targets: [
@@ -86,7 +86,7 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.6` or *Up to Next Major*.
+URL and pick version `1.0.7` or *Up to Next Major*.
 
 That's it. No additional packages and no linker flag changes are required
 in the host application target.
@@ -107,7 +107,7 @@ use_frameworks!
 
 target 'MyApp' do
   pod 'SAMobileCapture',
-    :podspec => 'https://raw.githubusercontent.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/1.0.6/SAMobileCapture.podspec'
+    :podspec => 'https://raw.githubusercontent.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/1.0.7/SAMobileCapture.podspec'
 end
 ```
 

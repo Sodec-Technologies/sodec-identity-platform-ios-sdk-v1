@@ -38,8 +38,8 @@ let package = Package(
         // embedded inside this xcframework.
         .binaryTarget(
             name: "SAMobileCapture",
-            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.6/SAMobileCapture.xcframework.zip",
-            checksum: "2e7725c547a2f2b5d99ac9323c766c7ef812235097861d6dfb299c9446a0b685"
+            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.7/SAMobileCapture.xcframework.zip",
+            checksum: "d3c378e884ade21f2d9d89e10eacc03dcf8128caabc1233bf8fa02ef2c7b2d19"
         ),
 
         // Bootstrap target. Apple SPM forbids attaching dependencies, linker

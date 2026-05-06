@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 
   spec.name             = 'SAMobileCapture'
-  spec.version          = '1.0.6'
+  spec.version          = '1.0.7'
   spec.summary          = 'Sodec Identity Platform SDK for iOS.'
   spec.description      = <<-DESC
     Sodec Identity Platform delivers a fast, accessible, App Store-ready
@@ -32,8 +32,8 @@ Pod::Spec.new do |spec|
   # Release asset and verifies its SHA-256 before unpacking. No Personal
   # Access Token is required.
   spec.source = {
-    :http   => 'https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.6/SAMobileCapture.xcframework.zip',
-    :sha256 => '2e7725c547a2f2b5d99ac9323c766c7ef812235097861d6dfb299c9446a0b685'
+    :http   => 'https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.7/SAMobileCapture.xcframework.zip',
+    :sha256 => 'd3c378e884ade21f2d9d89e10eacc03dcf8128caabc1233bf8fa02ef2c7b2d19'
   }
 
   # Pre-built xcframework (dynamic outer shell, statically embedded

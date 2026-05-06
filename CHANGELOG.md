@@ -5,6 +5,18 @@ All notable changes to **SAMobileCapture** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-05-06
+
+### Fixed
+- **`Unable to find module dependency: 'TensorFlowLite'`** Swift compiler
+  error that SPM consumers hit when the host application's target had to
+  type-check `import SAMobileCapture`. The SDK's three internal Swift
+  files that drive the on-device TFLite interpreters
+  (`SADocumentAligner.swift`, `SAPhotocopyDetector.swift`,
+  `ModelDataHandler.swift`) now use `@_implementationOnly import
+  TensorFlowLite`, so the public Swift module interface no longer leaks
+  the `TensorFlowLite` dependency to consumers.
+
 ## [1.0.6] - 2026-05-06
 
 ### Changed
