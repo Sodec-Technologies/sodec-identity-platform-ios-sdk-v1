@@ -1,6 +1,19 @@
 // swift-tools-version:5.9
 import PackageDescription
 
+// SAMobileCapture 1.0.6+ ships as a "static-inside-dynamic" xcframework:
+// the framework binary is itself dynamic (so it can be embedded as a regular
+// .framework in the host app), but every transitive ML / Google / Computer
+// Vision dependency is statically embedded inside the binary at SDK build
+// time. This means consumers no longer need to add MLKit / OpenCV / TFLite
+// SPM packages to their project, no longer need TensorFlowLiteSwift branch
+// overrides, and no longer need to add `-ObjC -all_load` to their
+// application target's Other Linker Flags.
+//
+// The only external dynamic dependency is OpenSSL, which is shipped as a
+// pre-built dynamic xcframework by the upstream OpenSSL package and cannot
+// be statically embedded.
+
 let package = Package(
     name: "SAMobileCapture",
     platforms: [
@@ -13,66 +26,35 @@ let package = Package(
         )
     ],
     dependencies: [
-        // ML Kit has no official SPM. Community wrapper pinned to the only
-        // App Store Connect-safe release (the 9.0.0 wrapper Info.plist regression
-        // is fixed in the -1 pre-release).
-        .package(url: "https://github.com/d-date/google-mlkit-swiftpm", exact: "9.0.0-1"),
-
-        .package(url: "https://github.com/yeatse/opencv-spm",           from: "4.13.0"),
-
-        // OpenSSL: 3.3.2000 is the minimum version that ships an Apple Silicon
-        // arm64 simulator slice.
-        .package(url: "https://github.com/krzyzanowskim/OpenSSL.git",   from: "3.3.2000"),
-
-        // TensorFlow Lite has no official SPM. The Swift wrapper is pinned to
-        // exact 2.14.0 so the bundled ML models stay aligned with the C
-        // runtime ABI. The consuming application MUST add this same package
-        // again at the root level using `branch: "master"` so Apple SPM can
-        // satisfy the wrapper's transitive `branch: "master"` requirement on
-        // TensorFlowLiteC (Apple SPM forbids stable->unstable resolution).
-        // See the README "Installation" section for the override snippet.
-        .package(url: "https://github.com/kewlbear/TensorFlowLiteSwift.git", exact: "2.14.0")
+        // OpenSSL: 3.3.2000 is the minimum version that ships an Apple
+        // Silicon arm64 simulator slice. The SAMobileCapture binary
+        // dynamically links @rpath/OpenSSL.framework/OpenSSL at runtime,
+        // so this package must be present in the resolved graph.
+        .package(url: "https://github.com/krzyzanowskim/OpenSSL.git", from: "3.3.2000")
     ],
     targets: [
-        // Binary distribution. MNN, ncnn, and openmp are statically embedded
-        // inside this xcframework, so they are NOT declared as separate
-        // binary targets.
+        // Binary distribution. All ML Kit, TensorFlow Lite, OpenCV, and
+        // Google Promises / Utilities transitive dependencies are statically
+        // embedded inside this xcframework.
         .binaryTarget(
             name: "SAMobileCapture",
-            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.0/SAMobileCapture.xcframework.zip",
-            checksum: "a62207168e5b5e464207250600ab3e39eff15635a4284818a8faea4d58f8c5ec"
+            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.6/SAMobileCapture.xcframework.zip",
+            checksum: "2e7725c547a2f2b5d99ac9323c766c7ef812235097861d6dfb299c9446a0b685"
         ),
 
         // Bootstrap target. Apple SPM forbids attaching dependencies, linker
-        // settings, or resources directly to a binary target; all such wiring
-        // lives here. ML Kit resource bundles ship inside the SAMobileCapture
-        // xcframework itself, so no `resources:` directive is required.
+        // settings, or resources directly to a binary target; everything
+        // is wired here. ML Kit resource bundles ship inside the
+        // SAMobileCapture xcframework itself (LatinOCRResources.bundle,
+        // GoogleMVFaceDetectorResources.bundle, *_Privacy.bundle), so no
+        // `resources:` directive is required.
         .target(
             name: "SAMobileCaptureBootstrap",
             dependencies: [
                 "SAMobileCapture",
-                .product(name: "MLKitTextRecognition", package: "google-mlkit-swiftpm"),
-                .product(name: "MLKitFaceDetection",   package: "google-mlkit-swiftpm"),
-                .product(name: "MLKitBarcodeScanning", package: "google-mlkit-swiftpm"),
-                .product(name: "OpenCV",               package: "opencv-spm"),
-                .product(name: "OpenSSL",              package: "OpenSSL"),
-                .product(name: "TensorFlowLiteSwift",  package: "TensorFlowLiteSwift")
+                .product(name: "OpenSSL", package: "OpenSSL")
             ],
-            path: "Sources/SAMobileCaptureBootstrap",
-            linkerSettings: [
-                // SAFE flags propagated automatically; consumers don't need to
-                // add these to their target's Other Linker Flags.
-                // CoreLocation: required by MLKitTextRecognitionCommon
-                //   (`CLLocationCoordinate2DIsValid` symbol).
-                // CoreML: required by TensorFlowLite's CoreML delegate
-                //   (`MLModel`, `MLFeatureValue`, `MLMultiArray`, etc.).
-                .linkedFramework("CoreLocation"),
-                .linkedFramework("CoreML")
-                // NOTE: Apple SPM treats `-ObjC`, `-all_load`, and
-                // `-weak_framework` as `unsafeFlags`, which version-pinned
-                // dependents cannot inherit. These are documented in the
-                // README and must be added by the host application target.
-            ]
+            path: "Sources/SAMobileCaptureBootstrap"
         )
     ]
 )

@@ -5,6 +5,36 @@ All notable changes to **SAMobileCapture** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-05-06
+
+### Changed
+- **Distribution model rebuilt as "static-inside-dynamic".** The
+  xcframework binary is still a dynamic framework (so it embeds into the
+  host application as a regular `.framework`), but every ML Kit, TensorFlow
+  Lite, OpenCV, FBLPromises, GTMSessionFetcher, GoogleDataTransport,
+  GoogleToolboxForMac, GoogleUtilities, and nanopb dependency is now
+  statically embedded inside the binary at SDK build time. Only OpenSSL
+  remains as an external dynamic dependency (the upstream package ships
+  pre-built dynamic xcframeworks that cannot be statically merged).
+
+### Fixed
+- **`dyld: Library not loaded: @rpath/FBLPromises.framework/...`** runtime
+  crash when the SDK was integrated via Swift Package Manager. SPM did
+  not embed the Google transitive frameworks because it resolved them as
+  static object files from the source packages, while the previously
+  shipped dynamic-linkage binary expected them as `@rpath` dynamic
+  frameworks. The new build pattern removes those `@rpath` references
+  entirely; only `OpenSSL` and `SAMobileCapture` itself remain.
+
+### Removed
+- Customer-side requirement to declare `MLKit*`, `TensorFlowLiteSwift`,
+  `opencv-spm`, and `TensorFlowLiteSwift branch: "master"` SPM packages.
+- Customer-side requirement to add `-ObjC -all_load` to *Other Linker
+  Flags*. ML Kit category dispatch now resolves entirely inside the SDK
+  binary at SDK build time.
+- Transitive CocoaPods dependencies on `GoogleMLKit/*`,
+  `TensorFlowLiteSwift`, and `OpenCV`. Hosts only need `OpenSSL-Universal`.
+
 ## [1.0.0] - 2026-05-06
 
 ### Added

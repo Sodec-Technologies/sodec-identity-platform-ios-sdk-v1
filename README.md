@@ -16,6 +16,15 @@ This single repository serves both **Swift Package Manager** and
 **CocoaPods**. The xcframework binary is shipped as a GitHub Release
 asset and verified against a SHA-256 checksum on every install.
 
+> **Starting with 1.0.6** the xcframework ships as a "static-inside-dynamic"
+> binary: every ML Kit, TensorFlow Lite, OpenCV, FBLPromises,
+> GTMSessionFetcher, GoogleDataTransport, GoogleToolboxForMac,
+> GoogleUtilities, and nanopb dependency is statically embedded inside
+> the SDK binary. Consumers no longer need to declare these as
+> transitive dependencies, no longer need `-ObjC -all_load` linker
+> flags, and no longer hit `dyld: Library not loaded` crashes when
+> integrating via Swift Package Manager.
+
 ---
 
 ## Table of contents
@@ -48,7 +57,7 @@ Supported architectures:
 
 > **Note:** Apple Silicon simulator (`arm64-simulator`) slices are not
 > currently shipped. Build your simulator targets under Rosetta 2 or use
-> an Intel-based macOS runner.
+> an Intel-based macOS runner. Device builds work natively on every Mac.
 
 ---
 
@@ -62,19 +71,7 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.5"
-    ),
-
-    // Required workaround for Apple SPM's "stable depends on unstable"
-    // resolver rule. The kewlbear/TensorFlowLiteSwift 2.14.0 manifest pins
-    // its TensorFlowLiteC dependency to `branch: "master"`. Apple SPM
-    // refuses to satisfy that branch requirement when the consuming root
-    // requirement is a stable version. Declaring TensorFlowLiteSwift here
-    // by branch promotes the entire chain to a branch-based requirement
-    // that the resolver can satisfy.
-    .package(
-        url: "https://github.com/kewlbear/TensorFlowLiteSwift.git",
-        branch: "master"
+        exact: "1.0.6"
     )
 ],
 targets: [
@@ -89,10 +86,10 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.5` or *Up to Next Major*. You must also add
-`https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
-package dependency, choosing the *Branch* dependency rule with branch
-`master` (see explanation above).
+URL and pick version `1.0.6` or *Up to Next Major*.
+
+That's it. No additional packages and no linker flag changes are required
+in the host application target.
 
 Resolve dependencies:
 
@@ -100,58 +97,17 @@ Resolve dependencies:
 xcodebuild -resolvePackageDependencies
 ```
 
-#### Required linker flags (SPM consumers)
-
-Add these two flags to your **application target's** Build Settings.
-This is the standard ML Kit-on-SPM requirement — every SDK that bundles
-ML Kit (Firebase, Google Maps, MLKit-SPM wrapper, etc.) needs them, and
-Apple Swift Package Manager does not let vendored packages propagate
-them automatically.
-
-`Build Settings → Linking - General → Other Linker Flags`:
-
-```
--ObjC
--all_load
-```
-
-Or as `xcconfig`:
-
-```
-OTHER_LDFLAGS = $(inherited) -ObjC -all_load
-```
-
-Why these flags are needed:
-
-| Flag         | Reason                                                                                |
-| ------------ | ------------------------------------------------------------------------------------- |
-| `-ObjC`      | Loads Objective-C categories from the ML Kit static libraries vendored inside the SDK |
-| `-all_load`  | Forces every static library symbol to be loaded so ML Kit category dispatch works     |
-
-If you forget either flag, the application will compile but will throw
-`unrecognized selector` exceptions at runtime when ML Kit categories
-are dispatched.
-
-Everything else (CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit /
-CryptoTokenKit) is already wired into the framework binary and the
-package manifest, so you do not need to add them.
-
-> **Apple Silicon Macs:** ML Kit ships only Intel simulator slices.
-> Simulator builds on Apple Silicon must run under Rosetta 2, or you can
-> exclude `arm64` from your simulator architectures. Device builds work
-> natively on all Macs.
-
 ### CocoaPods
 
 Add the following to your `Podfile`:
 
 ```ruby
 platform :ios, '15.6'
-use_frameworks! :linkage => :dynamic
+use_frameworks!
 
 target 'MyApp' do
   pod 'SAMobileCapture',
-    :podspec => 'https://raw.githubusercontent.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/1.0.5/SAMobileCapture.podspec'
+    :podspec => 'https://raw.githubusercontent.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/1.0.6/SAMobileCapture.podspec'
 end
 ```
 
@@ -161,7 +117,7 @@ Then install:
 pod install --repo-update
 ```
 
-The xcframework is downloaded from the GitHub Release asset and
+The xcframework is downloaded from the public GitHub Release asset and
 verified against the SHA-256 checksum declared in the podspec; no
 authentication is required.
 
@@ -173,24 +129,28 @@ authentication is required.
 
 ## Resource bundles
 
-The framework ships its own resource bundles inside the xcframework, so
-no extra steps are required for the standard SDK.
+All ML Kit and Google resource bundles ship inside the
+`SAMobileCapture.framework` itself:
 
-If your integration uses `LatinOCRResources.bundle` (Google ML Kit Latin
-OCR), add the bundle to your application target manually:
+- `LatinOCRResources.bundle`
+- `GoogleMVFaceDetectorResources.bundle`
+- `FBLPromises_Privacy.bundle`
+- `GTMSessionFetcher_Core_Privacy.bundle`
+- `GoogleDataTransport_Privacy.bundle`
+- `GoogleToolboxForMac_Privacy.bundle`
+- `GoogleToolboxForMac_Logger_Privacy.bundle`
+- `GoogleUtilities_Privacy.bundle`
+- `nanopb_Privacy.bundle`
 
-1. Drag `LatinOCRResources.bundle` into your Xcode project.
-2. In the *Build Phases → Copy Bundle Resources* phase, ensure the bundle
-   is listed.
-3. Rebuild.
+The framework is signed and embedded by Xcode automatically, so no extra
+*Copy Bundle Resources* phase is needed.
 
 ---
 
 ## Continuous integration
 
 Because the xcframework is fetched from a public GitHub Release, no
-secrets need to be configured in CI. Standard cache and install steps
-are sufficient.
+secrets need to be configured in CI.
 
 ### GitHub Actions (SPM)
 
