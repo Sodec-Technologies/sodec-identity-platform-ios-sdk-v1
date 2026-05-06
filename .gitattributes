@@ -1,0 +1,4 @@
+# Force LF line endings for text manifests so cross-platform clones diff cleanly.
+*.swift   text eol=lf
+*.md      text eol=lf
+LICENSE   text eol=lf
