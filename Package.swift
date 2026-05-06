@@ -54,25 +54,16 @@ let package = Package(
                 .product(name: "MLKitTextRecognition", package: "google-mlkit-swiftpm"),
                 .product(name: "MLKitFaceDetection",   package: "google-mlkit-swiftpm"),
                 .product(name: "MLKitBarcodeScanning", package: "google-mlkit-swiftpm"),
-                .product(name: "OpenCV",              package: "opencv-spm"),
+                .product(name: "OpenCV",               package: "opencv-spm"),
                 .product(name: "OpenSSL",              package: "OpenSSL"),
                 .product(name: "TensorFlowLiteSwift",  package: "TensorFlowLiteSwift")
             ],
-            path: "Sources/SAMobileCaptureBootstrap",
-            linkerSettings: [
-                // -ObjC: required for ML Kit category +load methods.
-                // -all_load: required by ML Kit category dispatch on SPM
-                //  (binary targets cannot carry linker flags themselves).
-                // CoreNFC, CryptoKit, and CryptoTokenKit are weak-linked so
-                //  hosts without NFC / Secure Enclave do not crash at launch.
-                .unsafeFlags([
-                    "-ObjC",
-                    "-all_load",
-                    "-weak_framework", "CoreNFC",
-                    "-weak_framework", "CryptoKit",
-                    "-weak_framework", "CryptoTokenKit"
-                ])
-            ]
+            path: "Sources/SAMobileCaptureBootstrap"
+            // NOTE: Apple SPM forbids `unsafeFlags` on packages consumed by
+            // version-pinned dependents. The required linker flags
+            // (`-ObjC`, `-all_load`, weak frameworks) are documented in the
+            // README and must be added to the host application target's
+            // "Other Linker Flags" build setting by the integrator.
         )
     ]
 )
