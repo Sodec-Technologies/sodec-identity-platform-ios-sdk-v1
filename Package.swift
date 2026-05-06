@@ -58,12 +58,21 @@ let package = Package(
                 .product(name: "OpenSSL",              package: "OpenSSL"),
                 .product(name: "TensorFlowLiteSwift",  package: "TensorFlowLiteSwift")
             ],
-            path: "Sources/SAMobileCaptureBootstrap"
-            // NOTE: Apple SPM forbids `unsafeFlags` on packages consumed by
-            // version-pinned dependents. The required linker flags
-            // (`-ObjC`, `-all_load`, weak frameworks) are documented in the
-            // README and must be added to the host application target's
-            // "Other Linker Flags" build setting by the integrator.
+            path: "Sources/SAMobileCaptureBootstrap",
+            linkerSettings: [
+                // SAFE flags propagated automatically; consumers don't need to
+                // add these to their target's Other Linker Flags.
+                // CoreLocation: required by MLKitTextRecognitionCommon
+                //   (`CLLocationCoordinate2DIsValid` symbol).
+                // CoreML: required by TensorFlowLite's CoreML delegate
+                //   (`MLModel`, `MLFeatureValue`, `MLMultiArray`, etc.).
+                .linkedFramework("CoreLocation"),
+                .linkedFramework("CoreML")
+                // NOTE: Apple SPM treats `-ObjC`, `-all_load`, and
+                // `-weak_framework` as `unsafeFlags`, which version-pinned
+                // dependents cannot inherit. These are documented in the
+                // README and must be added by the host application target.
+            ]
         )
     ]
 )
