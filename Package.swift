@@ -30,8 +30,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "SAMobileCapture",
-            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.11/SAMobileCapture.xcframework.zip",
-            checksum: "00e1fc1d35d9a0c5d9bc9df589db57761da8b7346dce0918f578103697ac03a9"
+            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.12/SAMobileCapture.xcframework.zip",
+            checksum: "eb05a609d489e54a533cb99fc9f1684456373e105cefd524e4873d2ff547e1e5"
         ),
 
         // Binary targets cannot declare dependencies directly; this wrapper
