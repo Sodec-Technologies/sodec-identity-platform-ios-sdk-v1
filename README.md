@@ -62,7 +62,7 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.8"
+        exact: "1.0.9"
     ),
 
     // Required workaround for Apple SPM's "stable depends on unstable"
@@ -89,7 +89,7 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.8` or *Up to Next Major*. You must also add
+URL and pick version `1.0.9` or *Up to Next Major*. You must also add
 `https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
 package dependency, choosing the *Branch* dependency rule with branch
 `master` (see explanation above).
@@ -132,18 +132,17 @@ If you forget either flag, the application will compile but will throw
 `unrecognized selector` exceptions at runtime when ML Kit categories
 are dispatched.
 
-#### Required ML Kit resource bundle
+#### ML Kit resource bundles
 
-`MLKitFaceDetection` requires `GoogleMVFaceDetectorResources.bundle`.
-Swift Package Manager cannot automatically copy this bundle into the host
-application, so download `GoogleMVFaceDetectorResources.bundle.zip` from
-the `google-mlkit-swiftpm` `9.0.0-1` release and add the unzipped
-`GoogleMVFaceDetectorResources.bundle` to the application target's
-Resources build phase.
+Starting with `1.0.9`, `GoogleMVFaceDetectorResources.bundle` and
+`LatinOCRResources.bundle` are embedded inside `SAMobileCapture.framework`,
+so host applications do not need to copy these bundles manually for SDK
+flows. If the host app uses the `google-mlkit-swiftpm` products directly
+outside SAMobileCapture, follow that package's own bundle requirements.
 
-Everything else (CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit /
-CryptoTokenKit) is already wired into the framework binary and the
-package manifest, so you do not need to add them.
+CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit / CryptoTokenKit, and
+the required ML Kit resource bundles are already wired into the framework
+binary and package manifest.
 
 > **Apple Silicon Macs:** ML Kit ships only Intel simulator slices.
 > Simulator builds on Apple Silicon must run under Rosetta 2, or you can
