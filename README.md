@@ -62,20 +62,8 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.12"
+        exact: "1.0.13"
     ),
-
-    // Required workaround for Apple SPM's "stable depends on unstable"
-    // resolver rule. The kewlbear/TensorFlowLiteSwift 2.14.0 manifest pins
-    // its TensorFlowLiteC dependency to `branch: "master"`. Apple SPM
-    // refuses to satisfy that branch requirement when the consuming root
-    // requirement is a stable version. Declaring TensorFlowLiteSwift here
-    // by branch promotes the entire chain to a branch-based requirement
-    // that the resolver can satisfy.
-    .package(
-        url: "https://github.com/kewlbear/TensorFlowLiteSwift.git",
-        branch: "master"
-    )
 ],
 targets: [
     .target(
@@ -89,10 +77,7 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.12` or *Up to Next Major*. You must also add
-`https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
-package dependency, choosing the *Branch* dependency rule with branch
-`master` (see explanation above).
+URL and pick version `1.0.13` or *Up to Next Major*.
 
 Resolve dependencies:
 
@@ -134,7 +119,7 @@ are dispatched.
 
 #### ML Kit resource bundles
 
-Starting with `1.0.12`, the SPM binary is a static xcframework.
+Starting with `1.0.13`, the SPM binary is a static xcframework.
 Host applications should copy `LatinOCRResources.bundle` to the app
 resources, matching the CocoaPods `MLKitTextRecognition` integration.
 `MLKitFaceDetection` already carries `GoogleMVFaceDetectorResources.bundle`
