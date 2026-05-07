@@ -12,53 +12,47 @@ let package = Package(
             targets: ["SAMobileCaptureBootstrap"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        // ML Kit has no official SPM. This community wrapper exposes the
+        // upstream ML Kit binary xcframeworks to Swift Package Manager.
+        .package(url: "https://github.com/Sodec-Technologies/google-mlkit-swiftpm", exact: "9.0.0-1-sodec.1"),
+
+        .package(url: "https://github.com/yeatse/opencv-spm", from: "4.13.0"),
+
+        // OpenSSL remains a dynamic binary dependency of SAMobileCapture.
+        .package(url: "https://github.com/krzyzanowskim/OpenSSL.git", from: "3.3.2000"),
+
+        // TensorFlowLiteSwift 2.14.0 depends on TensorFlowLiteC via branch.
+        // Consumers may need to add TensorFlowLiteSwift with branch "master"
+        // at the root app project to satisfy Apple's stable-to-unstable rule.
+        .package(url: "https://github.com/kewlbear/TensorFlowLiteSwift.git", exact: "2.14.0")
+    ],
     targets: [
         .binaryTarget(
             name: "SAMobileCapture",
-            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.13/SAMobileCapture.xcframework.zip",
-            checksum: "eb05a609d489e54a533cb99fc9f1684456373e105cefd524e4873d2ff547e1e5"
+            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.14/SAMobileCapture.xcframework.zip",
+            checksum: "1ad9beec683cd614565f25377dc1973f53ce590f9eac424a59a08a81202deae8"
         ),
 
-        // Binary targets cannot declare linker settings directly; this wrapper
-        // keeps Apple system framework links attached to the exported product.
+        // Binary targets cannot declare dependencies directly; this wrapper
+        // target publishes the SDK dependency graph to SPM consumers.
         .target(
             name: "SAMobileCaptureBootstrap",
             dependencies: [
-                "SAMobileCapture"
+                "SAMobileCapture",
+                .product(name: "MLKitTextRecognition", package: "google-mlkit-swiftpm"),
+                .product(name: "MLKitFaceDetection",   package: "google-mlkit-swiftpm"),
+                .product(name: "MLKitBarcodeScanning", package: "google-mlkit-swiftpm"),
+                .product(name: "OpenCV",               package: "opencv-spm"),
+                .product(name: "OpenSSL",              package: "OpenSSL"),
+                .product(name: "TensorFlowLiteSwift",  package: "TensorFlowLiteSwift")
             ],
             path: "Sources/SAMobileCaptureBootstrap",
             linkerSettings: [
-                .linkedLibrary("c++"),
-                .linkedLibrary("sqlite3"),
-                .linkedLibrary("z"),
-                .linkedFramework("AVFoundation"),
-                .linkedFramework("Accelerate"),
-                .linkedFramework("AssetsLibrary"),
-                .linkedFramework("AudioToolbox"),
-                .linkedFramework("CoreGraphics"),
-                .linkedFramework("CoreImage"),
                 .linkedFramework("CoreLocation"),
-                .linkedFramework("CoreMedia"),
-                .linkedFramework("CoreML"),
-                .linkedFramework("CoreNFC"),
-                .linkedFramework("CoreTelephony"),
-                .linkedFramework("CoreText"),
-                .linkedFramework("CoreVideo"),
-                .linkedFramework("CryptoKit"),
-                .linkedFramework("CryptoTokenKit"),
-                .linkedFramework("Foundation"),
-                .linkedFramework("LocalAuthentication"),
-                .linkedFramework("Metal"),
-                .linkedFramework("MessageUI"),
-                .linkedFramework("MobileCoreServices"),
-                .linkedFramework("OpenGLES"),
-                .linkedFramework("Photos"),
-                .linkedFramework("QuartzCore"),
-                .linkedFramework("ReplayKit"),
-                .linkedFramework("Security"),
-                .linkedFramework("SystemConfiguration"),
-                .linkedFramework("UIKit")
+                .linkedFramework("CoreML")
+                // ML Kit's SPM wrapper also requires host apps to add
+                // -ObjC and -all_load in Other Linker Flags.
             ]
         )
     ]

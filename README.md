@@ -62,8 +62,20 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.13"
+        exact: "1.0.14"
     ),
+
+    // Required workaround for Apple SPM's "stable depends on unstable"
+    // resolver rule. The kewlbear/TensorFlowLiteSwift 2.14.0 manifest pins
+    // its TensorFlowLiteC dependency to `branch: "master"`. Apple SPM
+    // refuses to satisfy that branch requirement when the consuming root
+    // requirement is a stable version. Declaring TensorFlowLiteSwift here
+    // by branch promotes the entire chain to a branch-based requirement
+    // that the resolver can satisfy.
+    .package(
+        url: "https://github.com/kewlbear/TensorFlowLiteSwift.git",
+        branch: "master"
+    )
 ],
 targets: [
     .target(
@@ -77,7 +89,10 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.13` or *Up to Next Major*.
+URL and pick version `1.0.14` or *Up to Next Major*. You must also add
+`https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
+package dependency, choosing the *Branch* dependency rule with branch
+`master` (see explanation above).
 
 Resolve dependencies:
 
@@ -119,12 +134,10 @@ are dispatched.
 
 #### ML Kit resource bundles
 
-Starting with `1.0.13`, the SPM binary is a static xcframework.
-Host applications should copy `LatinOCRResources.bundle` to the app
-resources, matching the CocoaPods `MLKitTextRecognition` integration.
-`MLKitFaceDetection` already carries `GoogleMVFaceDetectorResources.bundle`
-inside its framework, but copying it to the app resources is also safe for
-SPM smoke tests.
+Starting with `1.0.14`, the SPM package uses Sodec's patched
+`google-mlkit-swiftpm` fork. Its `MLKitTextRecognition.xcframework`
+contains `LatinOCRResources.bundle` inside each framework slice, matching
+the bundle lookup model already used by ML Kit Face Detection.
 
 CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit / CryptoTokenKit are
 wired through the framework binary and package manifest.
@@ -166,21 +179,11 @@ authentication is required.
 
 ## Resource bundles
 
-All ML Kit and Google resource bundles ship inside the
-`SAMobileCapture.framework` itself:
-
-- `LatinOCRResources.bundle`
-- `GoogleMVFaceDetectorResources.bundle`
-- `FBLPromises_Privacy.bundle`
-- `GTMSessionFetcher_Core_Privacy.bundle`
-- `GoogleDataTransport_Privacy.bundle`
-- `GoogleToolboxForMac_Privacy.bundle`
-- `GoogleToolboxForMac_Logger_Privacy.bundle`
-- `GoogleUtilities_Privacy.bundle`
-- `nanopb_Privacy.bundle`
-
-The framework is signed and embedded by Xcode automatically, so no extra
-*Copy Bundle Resources* phase is needed.
+SPM consumers do not need to manually add ML Kit resource bundles for SDK
+flows. `LatinOCRResources.bundle` is packaged inside the patched
+`MLKitTextRecognition.xcframework`, and
+`GoogleMVFaceDetectorResources.bundle` is already packaged inside
+`MLKitFaceDetection.xcframework`.
 
 ---
 
