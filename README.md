@@ -62,7 +62,7 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.10"
+        exact: "1.0.11"
     ),
 
     // Required workaround for Apple SPM's "stable depends on unstable"
@@ -89,7 +89,7 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.10` or *Up to Next Major*. You must also add
+URL and pick version `1.0.11` or *Up to Next Major*. You must also add
 `https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
 package dependency, choosing the *Branch* dependency rule with branch
 `master` (see explanation above).
@@ -134,15 +134,15 @@ are dispatched.
 
 #### ML Kit resource bundles
 
-Starting with `1.0.10`, `GoogleMVFaceDetectorResources.bundle` and
-`LatinOCRResources.bundle` are embedded inside `SAMobileCapture.framework`,
-so host applications do not need to copy these bundles manually for SDK
-flows. If the host app uses the `google-mlkit-swiftpm` products directly
-outside SAMobileCapture, follow that package's own bundle requirements.
+Starting with `1.0.11`, the SPM binary is a static xcframework.
+Host applications should copy `LatinOCRResources.bundle` to the app
+resources, matching the CocoaPods `MLKitTextRecognition` integration.
+`MLKitFaceDetection` already carries `GoogleMVFaceDetectorResources.bundle`
+inside its framework, but copying it to the app resources is also safe for
+SPM smoke tests.
 
-CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit / CryptoTokenKit, and
-the required ML Kit resource bundles are already wired into the framework
-binary and package manifest.
+CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit / CryptoTokenKit are
+wired through the framework binary and package manifest.
 
 > **Apple Silicon Macs:** ML Kit ships only Intel simulator slices.
 > Simulator builds on Apple Silicon must run under Rosetta 2, or you can
