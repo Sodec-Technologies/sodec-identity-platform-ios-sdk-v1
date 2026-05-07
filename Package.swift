@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [
         // ML Kit has no official SPM. This community wrapper exposes the
         // upstream ML Kit binary xcframeworks to Swift Package Manager.
-        .package(url: "https://github.com/Sodec-Technologies/google-mlkit-swiftpm", exact: "9.0.0-1-sodec.1"),
+        .package(url: "https://github.com/Sodec-Technologies/google-mlkit-swiftpm", exact: "9.0.0-1-sodec.2"),
 
         .package(url: "https://github.com/yeatse/opencv-spm", from: "4.13.0"),
 
@@ -30,8 +30,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "SAMobileCapture",
-            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.14/SAMobileCapture.xcframework.zip",
-            checksum: "1ad9beec683cd614565f25377dc1973f53ce590f9eac424a59a08a81202deae8"
+            url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1/releases/download/1.0.15/SAMobileCapture.xcframework.zip",
+            checksum: "8916f43e0fb4d27ec96c48ac857ca495ed39658bc30de2d0b53788a3b0890a8c"
         ),
 
         // Binary targets cannot declare dependencies directly; this wrapper

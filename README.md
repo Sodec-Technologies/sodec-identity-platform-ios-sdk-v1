@@ -62,7 +62,7 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.14"
+        exact: "1.0.15"
     ),
 
     // Required workaround for Apple SPM's "stable depends on unstable"
@@ -89,7 +89,7 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.14` or *Up to Next Major*. You must also add
+URL and pick version `1.0.15` or *Up to Next Major*. You must also add
 `https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
 package dependency, choosing the *Branch* dependency rule with branch
 `master` (see explanation above).
@@ -134,10 +134,11 @@ are dispatched.
 
 #### ML Kit resource bundles
 
-Starting with `1.0.14`, the SPM package uses Sodec's patched
-`google-mlkit-swiftpm` fork. Its `MLKitTextRecognition.xcframework`
-contains `LatinOCRResources.bundle` inside each framework slice, matching
-the bundle lookup model already used by ML Kit Face Detection.
+Starting with `1.0.15`, the SPM package uses Sodec's patched
+`google-mlkit-swiftpm` fork. Its `MLKitTextRecognition.xcframework` and
+`MLKitTextRecognitionCommon.xcframework` contain `LatinOCRResources.bundle`
+inside each framework slice. `SAMobileCapture.framework` also carries the
+same bundle as a fallback for ML Kit runtime bundle lookup.
 
 CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit / CryptoTokenKit are
 wired through the framework binary and package manifest.
@@ -181,9 +182,9 @@ authentication is required.
 
 SPM consumers do not need to manually add ML Kit resource bundles for SDK
 flows. `LatinOCRResources.bundle` is packaged inside the patched
-`MLKitTextRecognition.xcframework`, and
-`GoogleMVFaceDetectorResources.bundle` is already packaged inside
-`MLKitFaceDetection.xcframework`.
+`MLKitTextRecognition.xcframework`, `MLKitTextRecognitionCommon.xcframework`,
+and `SAMobileCapture.framework`. `GoogleMVFaceDetectorResources.bundle` is
+already packaged inside `MLKitFaceDetection.xcframework`.
 
 ---
 
