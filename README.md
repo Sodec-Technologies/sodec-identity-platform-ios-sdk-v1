@@ -16,15 +16,6 @@ This single repository serves both **Swift Package Manager** and
 **CocoaPods**. The xcframework binary is shipped as a GitHub Release
 asset and verified against a SHA-256 checksum on every install.
 
-> **Starting with 1.0.7** the xcframework ships as a "static-inside-dynamic"
-> binary: every ML Kit, TensorFlow Lite, OpenCV, FBLPromises,
-> GTMSessionFetcher, GoogleDataTransport, GoogleToolboxForMac,
-> GoogleUtilities, and nanopb dependency is statically embedded inside
-> the SDK binary. Consumers no longer need to declare these as
-> transitive dependencies, no longer need `-ObjC -all_load` linker
-> flags, and no longer hit `dyld: Library not loaded` crashes when
-> integrating via Swift Package Manager.
-
 ---
 
 ## Table of contents
@@ -57,7 +48,7 @@ Supported architectures:
 
 > **Note:** Apple Silicon simulator (`arm64-simulator`) slices are not
 > currently shipped. Build your simulator targets under Rosetta 2 or use
-> an Intel-based macOS runner. Device builds work natively on every Mac.
+> an Intel-based macOS runner.
 
 ---
 
@@ -72,6 +63,18 @@ dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
         exact: "1.0.7"
+    ),
+
+    // Required workaround for Apple SPM's "stable depends on unstable"
+    // resolver rule. The kewlbear/TensorFlowLiteSwift 2.14.0 manifest pins
+    // its TensorFlowLiteC dependency to `branch: "master"`. Apple SPM
+    // refuses to satisfy that branch requirement when the consuming root
+    // requirement is a stable version. Declaring TensorFlowLiteSwift here
+    // by branch promotes the entire chain to a branch-based requirement
+    // that the resolver can satisfy.
+    .package(
+        url: "https://github.com/kewlbear/TensorFlowLiteSwift.git",
+        branch: "master"
     )
 ],
 targets: [
@@ -86,16 +89,66 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.7` or *Up to Next Major*.
-
-That's it. No additional packages and no linker flag changes are required
-in the host application target.
+URL and pick version `1.0.7` or *Up to Next Major*. You must also add
+`https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
+package dependency, choosing the *Branch* dependency rule with branch
+`master` (see explanation above).
 
 Resolve dependencies:
 
 ```bash
 xcodebuild -resolvePackageDependencies
 ```
+
+#### Required linker flags (SPM consumers)
+
+Add these two flags to your **application target's** Build Settings.
+This is the standard ML Kit-on-SPM requirement — every SDK that bundles
+ML Kit (Firebase, Google Maps, MLKit-SPM wrapper, etc.) needs them, and
+Apple Swift Package Manager does not let vendored packages propagate
+them automatically.
+
+`Build Settings → Linking - General → Other Linker Flags`:
+
+```
+-ObjC
+-all_load
+```
+
+Or as `xcconfig`:
+
+```
+OTHER_LDFLAGS = $(inherited) -ObjC -all_load
+```
+
+Why these flags are needed:
+
+| Flag         | Reason                                                                                |
+| ------------ | ------------------------------------------------------------------------------------- |
+| `-ObjC`      | Loads Objective-C categories from the ML Kit static libraries vendored inside the SDK |
+| `-all_load`  | Forces every static library symbol to be loaded so ML Kit category dispatch works     |
+
+If you forget either flag, the application will compile but will throw
+`unrecognized selector` exceptions at runtime when ML Kit categories
+are dispatched.
+
+#### Required ML Kit resource bundle
+
+`MLKitFaceDetection` requires `GoogleMVFaceDetectorResources.bundle`.
+Swift Package Manager cannot automatically copy this bundle into the host
+application, so download `GoogleMVFaceDetectorResources.bundle.zip` from
+the `google-mlkit-swiftpm` `9.0.0-1` release and add the unzipped
+`GoogleMVFaceDetectorResources.bundle` to the application target's
+Resources build phase.
+
+Everything else (CoreLocation, CoreML, weak-linked CoreNFC / CryptoKit /
+CryptoTokenKit) is already wired into the framework binary and the
+package manifest, so you do not need to add them.
+
+> **Apple Silicon Macs:** ML Kit ships only Intel simulator slices.
+> Simulator builds on Apple Silicon must run under Rosetta 2, or you can
+> exclude `arm64` from your simulator architectures. Device builds work
+> natively on all Macs.
 
 ### CocoaPods
 
@@ -117,7 +170,7 @@ Then install:
 pod install --repo-update
 ```
 
-The xcframework is downloaded from the public GitHub Release asset and
+The xcframework is downloaded from the GitHub Release asset and
 verified against the SHA-256 checksum declared in the podspec; no
 authentication is required.
 
