@@ -62,7 +62,7 @@ Add the package to your `Package.swift`:
 dependencies: [
     .package(
         url: "https://github.com/Sodec-Technologies/sodec-identity-platform-ios-sdk-v1.git",
-        exact: "1.0.9"
+        exact: "1.0.10"
     ),
 
     // Required workaround for Apple SPM's "stable depends on unstable"
@@ -89,7 +89,7 @@ targets: [
 ```
 
 Or, in Xcode: **File → Add Package Dependencies… →** paste the repository
-URL and pick version `1.0.9` or *Up to Next Major*. You must also add
+URL and pick version `1.0.10` or *Up to Next Major*. You must also add
 `https://github.com/kewlbear/TensorFlowLiteSwift.git` as a separate
 package dependency, choosing the *Branch* dependency rule with branch
 `master` (see explanation above).
@@ -134,7 +134,7 @@ are dispatched.
 
 #### ML Kit resource bundles
 
-Starting with `1.0.9`, `GoogleMVFaceDetectorResources.bundle` and
+Starting with `1.0.10`, `GoogleMVFaceDetectorResources.bundle` and
 `LatinOCRResources.bundle` are embedded inside `SAMobileCapture.framework`,
 so host applications do not need to copy these bundles manually for SDK
 flows. If the host app uses the `google-mlkit-swiftpm` products directly
